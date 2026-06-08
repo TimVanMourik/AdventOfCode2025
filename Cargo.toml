@@ -1,0 +1,12 @@
+[workspace]
+members = ["aoc-core", "day*"]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+anyhow = "1"
+itertools = "0.13"
+regex = "1"
