@@ -46,8 +46,6 @@ path = "src/main.rs"
 EOF
 
 cat > "$crate_dir/src/lib.rs" <<'EOF'
-use anyhow::{Context, Result};
-
 mod part1;
 mod part2;
 pub use part1::part1;
@@ -60,9 +58,7 @@ pub struct Item {
 fn parse_line(line: &str) -> Item {
     let trimmed = line.trim();
     Item {
-        value: trimmed
-            .parse::<String>()
-            .with_context(|| format!("invalid line: {}", trimmed))?,
+        value: trimmed.parse::<String>().unwrap(),
     }
 }
 
@@ -105,7 +101,7 @@ fn main() -> Result<()> {
     };
 
     let input = aoc_core::read_input(${day_num}, input_type)?;
-    let parsed = ${crate}::parse(&input).collect::<Result<Vec<_>>>()?;
+    let parsed = ${crate}::parse(&input);
 
     println!("Part 1: {}", ${crate}::part1(&parsed));
     println!("Part 2: {}", ${crate}::part2(&parsed));

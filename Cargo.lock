@@ -38,3 +38,11 @@ dependencies = [
  "anyhow",
  "aoc-core",
 ]
+
+[[package]]
+name = "day04"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc-core",
+]
