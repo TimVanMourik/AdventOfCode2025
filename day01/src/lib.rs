@@ -1,11 +1,9 @@
-use anyhow::{Context, Result};
-
 mod part1;
 mod part2;
 pub use part1::part1;
 pub use part2::part2;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug)]
 enum Direction {
     L,
     R,
@@ -16,31 +14,32 @@ pub struct Move {
     distance: i64,
 }
 
-fn parse_line(line: &str) -> Result<Move> {
+fn parse_line(line: &str) -> Move {
     let trimmed = line.trim();
     if trimmed.len() < 2 {
-        anyhow::bail!("line too short: {}", trimmed);
+        panic!("line too short: {}", trimmed);
     }
     let direction = match trimmed.chars().next().unwrap() {
         'L' => Direction::L,
         'R' => Direction::R,
-        c => anyhow::bail!("invalid direction: {}", c),
+        c => panic!("invalid direction: {}", c),
     };
     let distance_str = &trimmed[1..];
     let distance = distance_str
         .parse::<i64>()
-        .with_context(|| format!("invalid integer: {}", distance_str))?;
-    Ok(Move {
+        .unwrap_or_else(|_| panic!("invalid integer: {}", distance_str));
+    Move {
         direction,
         distance,
-    })
+    }
 }
 
-pub fn parse(input: &str) -> impl Iterator<Item = Result<Move>> + '_ {
+pub fn parse(input: &str) -> Vec<Move> {
     input
         .lines()
         .filter(|line| !line.trim().is_empty())
         .map(parse_line)
+    .collect()
 }
 
 #[cfg(test)]
@@ -51,17 +50,13 @@ mod tests {
 
     #[test]
     fn sample_part1() {
-        let parsed = parse(SAMPLE)
-            .collect::<Result<Vec<_>>>()
-            .expect("sample should parse");
+        let parsed = parse(SAMPLE);
         assert_eq!(part1(&parsed), 10);
     }
 
     #[test]
     fn sample_part2() {
-        let parsed = parse(SAMPLE)
-            .collect::<Result<Vec<_>>>()
-            .expect("sample should parse");
+        let parsed = parse(SAMPLE);
         assert_eq!(part2(&parsed), 24);
     }
 }

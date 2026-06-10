@@ -11,7 +11,7 @@ fn main() -> Result<()> {
     };
 
     let input = aoc_core::read_input(1, input_type)?;
-    let parsed = day01::parse(&input).collect::<Result<Vec<_>>>()?;
+    let parsed = day01::parse(&input);
 
     println!("Part 1: {}", day01::part1(&parsed));
     println!("Part 2: {}", day01::part2(&parsed));

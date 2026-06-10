@@ -1,49 +1,34 @@
-use anyhow::{Context, Result};
-
 mod part1;
 mod part2;
 pub use part1::part1;
 pub use part2::part2;
 
-pub struct Item {
-    pub value: String,
+#[derive(Debug)]
+pub struct IdRange {
+    pub first: i64,
+    pub last: i64,
 }
 
-fn parse_line(line: &str) -> Result<Item> {
+fn parse_range(line: &str) -> IdRange {
     let trimmed = line.trim();
-    Ok(Item {
-        value: trimmed
-            .parse::<String>()
-            .with_context(|| format!("invalid line: {}", trimmed))?,
-    })
+    let parts: Vec<&str> = trimmed.split('-').collect();
+    if parts.len() != 2 {
+        panic!("invalid line: {}", trimmed);
+    }
+    let first = parts[0]
+        .parse::<i64>()
+        .unwrap_or_else(|_| panic!("invalid line: {}", trimmed));
+    let last = parts[1]
+        .parse::<i64>()
+        .unwrap_or_else(|_| panic!("invalid line: {}", trimmed));
+    IdRange { first, last }
 }
 
-pub fn parse(input: &str) -> impl Iterator<Item = Result<Item>> + '_ {
+pub fn parse(input: &str) -> Vec<IdRange> {
     input
         .lines()
         .filter(|line| !line.trim().is_empty())
-        .map(parse_line)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    const SAMPLE: &str = "abc\ndef\n";
-
-    #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE)
-            .collect::<Result<Vec<_>>>()
-            .expect("sample should parse");
-        assert_eq!(part1(&parsed), 0);
-    }
-
-    #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE)
-            .collect::<Result<Vec<_>>>()
-            .expect("sample should parse");
-        assert_eq!(part2(&parsed), 0);
-    }
+        .flat_map(|line| line.split(','))
+        .map(parse_range)
+        .collect()
 }
