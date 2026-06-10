@@ -52,12 +52,5 @@ fn compute_valid(item: &IdRange) -> Vec<i64> {
 }
 
 pub fn part2(items: &[IdRange]) -> i64 {
-    items
-        .iter()
-        .fold(Vec::new(), |mut acc, range| {
-            acc.extend(compute_valid(range));
-            acc
-        })
-        .iter()
-        .sum()
+    items.iter().flat_map(compute_valid).sum()
 }

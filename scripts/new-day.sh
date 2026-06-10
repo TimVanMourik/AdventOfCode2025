@@ -57,43 +57,21 @@ pub struct Item {
     pub value: String,
 }
 
-fn parse_line(line: &str) -> Result<Item> {
+fn parse_line(line: &str) -> Item {
     let trimmed = line.trim();
-    Ok(Item {
+    Item {
         value: trimmed
             .parse::<String>()
             .with_context(|| format!("invalid line: {}", trimmed))?,
-    })
+    }
 }
 
-pub fn parse(input: &str) -> impl Iterator<Item = Result<Item>> + '_ {
+pub fn parse(input: &str) -> Vec<Item> {
     input
         .lines()
         .filter(|line| !line.trim().is_empty())
         .map(parse_line)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    const SAMPLE: &str = "abc\ndef\n";
-
-    #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE)
-            .collect::<Result<Vec<_>>>()
-            .expect("sample should parse");
-        assert_eq!(part1(&parsed), 0);
-    }
-
-    #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE)
-            .collect::<Result<Vec<_>>>()
-            .expect("sample should parse");
-        assert_eq!(part2(&parsed), 0);
-    }
+        .collect()
 }
 EOF
 
