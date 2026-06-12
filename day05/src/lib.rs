@@ -4,7 +4,13 @@ pub use part1::part1;
 pub use part2::part2;
 
 type Id = i64;
-type FreshRange = (i64, i64);
+
+#[derive(Debug, Clone)]
+pub struct FreshRange {
+    start: i64,
+    end: i64,
+}
+
 pub struct Ingredients {
     fresh_ranges: Vec<FreshRange>,
     ids: Vec<Id>,
@@ -14,7 +20,7 @@ impl Ingredients {
     pub fn is_in_range(&self, value: &i64) -> bool {
         self.fresh_ranges
             .iter()
-            .any(|&(start, end)| value >= &start && value <= &end)
+            .any(|range| value >= &range.start && value <= &range.end)
     }
 }
 
@@ -23,7 +29,7 @@ fn parse_range(line: &str) -> FreshRange {
     let (start, end) = trimmed.split_once('-').unwrap();
     let start = start.parse::<i64>().unwrap();
     let end = end.parse::<i64>().unwrap();
-    (start, end)
+    FreshRange { start, end }
 }
 
 pub fn parse(input: &str) -> Ingredients {
