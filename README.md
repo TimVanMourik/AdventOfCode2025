@@ -4,8 +4,9 @@
 
 ```bash
 just check
-just run 1
 just test 1
+just run 1 --test
+just run 1
 ```
 
 ## Add a new day

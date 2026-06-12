@@ -3,15 +3,19 @@ mod part2;
 pub use part1::part1;
 pub use part2::part2;
 
+#[derive(Clone)]
 pub struct Shelf {
     has_paper: bool,
     x: usize,
     y: usize,
 }
 
+#[derive(Clone)]
 pub struct Warehouse {
     shelves: Vec<Vec<Shelf>>,
 }
+
+const MAX_NEIGHBOURS: i64 = 3;
 
 impl Warehouse {
     fn neighbours(&self, row: usize, col: usize) -> impl Iterator<Item = &Shelf> {
@@ -40,6 +44,33 @@ impl Warehouse {
                 None
             }
         })
+    }
+
+    fn is_roll_removable(&self, shelf: &Shelf) -> bool {
+        if !shelf.has_paper {
+            return false;
+        }
+        let neighbour_count = self
+            .neighbours(shelf.y, shelf.x)
+            .filter(|n| n.has_paper)
+            .count() as i64;
+
+        neighbour_count <= MAX_NEIGHBOURS
+    }
+
+    fn removable_rolls(&self) -> Vec<(usize, usize)> {
+        self.shelves
+            .iter()
+            .flat_map(|row| row.iter())
+            .filter(|shelf| self.is_roll_removable(shelf))
+            .map(|shelf| (shelf.y, shelf.x))
+            .collect()
+    }
+
+    fn remove_rolls(&mut self, shelves_to_remove: &[(usize, usize)]) {
+        for &(y, x) in shelves_to_remove {
+            self.shelves[y][x].has_paper = false;
+        }
     }
 }
 

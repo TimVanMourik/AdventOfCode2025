@@ -39,24 +39,5 @@ pub fn parse(input: &str) -> Vec<Move> {
         .lines()
         .filter(|line| !line.trim().is_empty())
         .map(parse_line)
-    .collect()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    const SAMPLE: &str = "R1\nL2\nR3\nL4\n";
-
-    #[test]
-    fn sample_part1() {
-        let parsed = parse(SAMPLE);
-        assert_eq!(part1(&parsed), 10);
-    }
-
-    #[test]
-    fn sample_part2() {
-        let parsed = parse(SAMPLE);
-        assert_eq!(part2(&parsed), 24);
-    }
+        .collect()
 }
