@@ -28,6 +28,35 @@ fn right_pad(line: &str, longest: usize) -> String {
     padded
 }
 
+fn extract_values_for_operation(lines: &[String], operation_index: usize) -> Vec<i64> {
+    let mut values = Vec::new();
+    let mut index = 0;
+
+    loop {
+        let mut value = String::new();
+        for line in lines {
+            value.push_str(
+                &line
+                    .chars()
+                    .nth(operation_index + index)
+                    .unwrap_or(' ')
+                    .to_string(),
+            );
+        }
+
+        if value.trim().is_empty() {
+            break;
+        }
+
+        values.push(value.trim().parse::<i64>().unwrap_or_else(|_| {
+            panic!("Failed to parse '{}' as i64 in line {}", value, index + 1)
+        }));
+        index += 1;
+    }
+
+    values
+}
+
 pub fn parse(input: &str) -> Vec<Computation> {
     let mut computation = Vec::new();
     let lines = input
@@ -53,28 +82,7 @@ pub fn parse(input: &str) -> Vec<Computation> {
 
     // loop through enumartion of operations
     for operation in operations {
-        let mut values = Vec::new();
-        let mut index = 0;
-        loop {
-            let mut value = String::new();
-            for line in &lines[..lines.len() - 1] {
-                value.push_str(
-                    &line
-                        .chars()
-                        .nth(operation.index + index)
-                        .unwrap_or_else(|| ' ')
-                        .to_string(),
-                );
-            }
-            if value.trim().is_empty() {
-                break;
-            } else {
-                values.push(value.trim().parse::<i64>().unwrap_or_else(|_| {
-                    panic!("Failed to parse '{}' as i64 in line {}", value, index + 1)
-                }));
-            }
-            index += 1;
-        }
+        let values = extract_values_for_operation(&lines[..lines.len() - 1], operation.index);
         computation.push(Computation {
             values,
             operator: operation.operator,

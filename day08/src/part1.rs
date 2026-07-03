@@ -69,13 +69,54 @@ impl Playground {
     }
 }
 
-struct Circuit<'a> {
-    boxes: HashSet<&'a JunctionBox>,
+fn find_circuits<'a>(
+    connections: &HashMap<&'a JunctionBox, Vec<&'a JunctionBox>>,
+) -> Vec<Circuit<'a>> {
+    let mut visited = HashSet::<&'a JunctionBox>::new();
+    let mut circuits = Vec::<Circuit<'a>>::new();
+
+    for &junction_box in connections.keys() {
+        if !visited.contains(junction_box) {
+            let mut circuit = HashSet::new();
+            explore_circuit(junction_box, connections, &mut visited, &mut circuit);
+            if !circuit.is_empty() {
+                circuits.push(circuit);
+            }
+        }
+    }
+
+    circuits
 }
+
+fn explore_circuit<'a>(
+    junction_box: &'a JunctionBox,
+    connections: &HashMap<&'a JunctionBox, Vec<&'a JunctionBox>>,
+    visited: &mut HashSet<&'a JunctionBox>,
+    circuit: &mut Circuit<'a>,
+) {
+    if !visited.insert(junction_box) {
+        return;
+    }
+
+    circuit.insert(junction_box);
+
+    if let Some(neighbors) = connections.get(junction_box) {
+        for &neighbor in neighbors {
+            if !visited.contains(neighbor) {
+                explore_circuit(neighbor, connections, visited, circuit);
+            }
+        }
+    }
+}
+
+type Circuit<'a> = HashSet<&'a JunctionBox>;
 
 pub fn part1(items: &[JunctionBox], number_of_connections: usize) -> usize {
     let playground = Playground::new(items);
-    let mut connections = playground.wire_up(number_of_connections);
+    let connections = playground.wire_up(number_of_connections);
+    let circuits = find_circuits(&connections);
 
-    connections.len()
+    let mut circuit_sizes: Vec<usize> = circuits.iter().map(HashSet::len).collect();
+    circuit_sizes.sort_unstable_by(|a, b| b.cmp(a));
+    circuit_sizes.into_iter().take(3).product()
 }
