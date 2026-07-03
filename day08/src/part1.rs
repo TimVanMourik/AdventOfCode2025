@@ -6,6 +6,73 @@ use std::collections::HashSet;
 use crate::DistanceMatrix;
 use crate::{JunctionBox, Playground};
 
+type Circuit = HashSet<usize>;
+
+pub struct ConnectionGraph {
+    connections: HashMap<usize, HashSet<usize>>,
+}
+
+impl ConnectionGraph {
+    fn new() -> Self {
+        Self {
+            connections: HashMap::new(),
+        }
+    }
+
+    fn is_connected(&self, from: usize, to: usize) -> bool {
+        self.connections
+            .get(&from)
+            .is_some_and(|neighbors| neighbors.contains(&to))
+    }
+
+    fn connect(&mut self, from: usize, to: usize) {
+        self.connections.entry(from).or_default().insert(to);
+        self.connections.entry(to).or_default().insert(from);
+    }
+
+    fn find_circuits(&self) -> Vec<Circuit> {
+        let mut visited = HashSet::<usize>::new();
+        let mut circuits = Vec::<Circuit>::new();
+
+        for &junction_box in self.connections.keys() {
+            if !visited.contains(&junction_box) {
+                let mut circuit = HashSet::new();
+                self.explore_circuit(junction_box, &mut visited, &mut circuit);
+                if !circuit.is_empty() {
+                    circuits.push(circuit);
+                }
+            }
+        }
+
+        circuits
+    }
+
+    fn explore_circuit(
+        &self,
+        junction_box: usize,
+        visited: &mut HashSet<usize>,
+        circuit: &mut Circuit,
+    ) {
+        let mut stack = vec![junction_box];
+
+        while let Some(node) = stack.pop() {
+            if !visited.insert(node) {
+                continue;
+            }
+
+            circuit.insert(node);
+
+            if let Some(neighbors) = self.connections.get(&node) {
+                for &neighbor in neighbors {
+                    if !visited.contains(&neighbor) {
+                        stack.push(neighbor);
+                    }
+                }
+            }
+        }
+    }
+}
+
 pub struct ShortestDistanceIter {
     heap: BinaryHeap<Reverse<(i64, usize, usize)>>, // (distance, i, j)
 }
@@ -34,87 +101,28 @@ impl DistanceMatrix {
 }
 
 impl Playground {
-    pub fn wire_up(&self, n: usize) -> HashMap<&JunctionBox, Vec<&JunctionBox>> {
-        let mut connections: HashMap<&JunctionBox, Vec<&JunctionBox>> = HashMap::new();
+    pub fn wire_up(&self, n: usize) -> ConnectionGraph {
+        let mut connections = ConnectionGraph::new();
         let mut n_connections = 0;
         let mut it = self.distance_matrix().shortest_distances();
-        loop {
-            if let Some((_d, i, j)) = it.next() {
-                let source = &self.junction_boxes[i];
-                let target = &self.junction_boxes[j];
-                let is_connected = connections
-                    .get(source)
-                    .map_or(false, |v| v.contains(&target));
-                if !is_connected {
-                    Self::connect(source, target, &mut connections);
-                    n_connections += 1;
-                }
-            } else {
+        while n_connections < n {
+            let Some((_d, i, j)) = it.next() else {
                 break;
-            }
-            if n_connections >= n {
-                break;
+            };
+
+            if !connections.is_connected(i, j) {
+                connections.connect(i, j);
+                n_connections += 1;
             }
         }
         connections
     }
-
-    fn connect<'a>(
-        from: &'a JunctionBox,
-        to: &'a JunctionBox,
-        memo: &mut HashMap<&'a JunctionBox, Vec<&'a JunctionBox>>,
-    ) {
-        memo.entry(from).or_default().push(to);
-        memo.entry(to).or_default().push(from);
-    }
 }
-
-fn find_circuits<'a>(
-    connections: &HashMap<&'a JunctionBox, Vec<&'a JunctionBox>>,
-) -> Vec<Circuit<'a>> {
-    let mut visited = HashSet::<&'a JunctionBox>::new();
-    let mut circuits = Vec::<Circuit<'a>>::new();
-
-    for &junction_box in connections.keys() {
-        if !visited.contains(junction_box) {
-            let mut circuit = HashSet::new();
-            explore_circuit(junction_box, connections, &mut visited, &mut circuit);
-            if !circuit.is_empty() {
-                circuits.push(circuit);
-            }
-        }
-    }
-
-    circuits
-}
-
-fn explore_circuit<'a>(
-    junction_box: &'a JunctionBox,
-    connections: &HashMap<&'a JunctionBox, Vec<&'a JunctionBox>>,
-    visited: &mut HashSet<&'a JunctionBox>,
-    circuit: &mut Circuit<'a>,
-) {
-    if !visited.insert(junction_box) {
-        return;
-    }
-
-    circuit.insert(junction_box);
-
-    if let Some(neighbors) = connections.get(junction_box) {
-        for &neighbor in neighbors {
-            if !visited.contains(neighbor) {
-                explore_circuit(neighbor, connections, visited, circuit);
-            }
-        }
-    }
-}
-
-type Circuit<'a> = HashSet<&'a JunctionBox>;
 
 pub fn part1(items: &[JunctionBox], number_of_connections: usize) -> usize {
     let playground = Playground::new(items);
-    let connections = playground.wire_up(number_of_connections);
-    let circuits = find_circuits(&connections);
+    let graph = playground.wire_up(number_of_connections);
+    let circuits = graph.find_circuits();
 
     let mut circuit_sizes: Vec<usize> = circuits.iter().map(HashSet::len).collect();
     circuit_sizes.sort_unstable_by(|a, b| b.cmp(a));
