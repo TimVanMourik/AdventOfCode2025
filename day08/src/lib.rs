@@ -1,3 +1,8 @@
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
+use std::collections::HashMap;
+use std::collections::HashSet;
+
 mod part1;
 mod part2;
 pub use part1::part1;
@@ -11,17 +16,13 @@ pub struct JunctionBox {
 }
 
 pub struct Playground {
-    junction_boxes: Vec<JunctionBox>,
-    distance_matrix: DistanceMatrix,
+    pub distance_matrix: DistanceMatrix,
 }
 
 impl Playground {
     pub fn new(junction_boxes: &[JunctionBox]) -> Self {
         let distance_matrix = Self::build_distance_matrix(&junction_boxes);
-        Playground {
-            junction_boxes: junction_boxes.to_vec(),
-            distance_matrix,
-        }
+        Playground { distance_matrix }
     }
 
     pub fn distance_matrix(&self) -> &DistanceMatrix {
@@ -63,6 +64,81 @@ impl std::fmt::Debug for DistanceMatrix {
             writeln!(f)?;
         }
         Ok(())
+    }
+}
+
+pub struct ShortestDistanceIter {
+    heap: BinaryHeap<Reverse<(i64, usize, usize)>>, // (distance, i, j)
+}
+
+impl Iterator for ShortestDistanceIter {
+    type Item = (i64, usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.heap.pop().map(|Reverse(item)| item)
+    }
+}
+
+impl DistanceMatrix {
+    pub fn shortest_distances(&self) -> ShortestDistanceIter {
+        let n = self.distances.len();
+        let mut heap = BinaryHeap::with_capacity(n.saturating_mul(n.saturating_sub(1)) / 2);
+
+        for i in 0..n {
+            for j in (i + 1)..n {
+                heap.push(Reverse((self.distances[i][j], i, j)));
+            }
+        }
+
+        ShortestDistanceIter { heap }
+    }
+}
+
+pub type Circuit = HashSet<usize>;
+
+pub struct ConnectionGraph {
+    connections: HashMap<usize, HashSet<usize>>,
+}
+
+impl ConnectionGraph {
+    fn new() -> Self {
+        Self {
+            connections: HashMap::new(),
+        }
+    }
+
+    fn is_connected(&self, from: usize, to: usize) -> bool {
+        self.connections
+            .get(&from)
+            .is_some_and(|neighbors| neighbors.contains(&to))
+    }
+
+    fn connect(&mut self, from: usize, to: usize) {
+        self.connections.entry(from).or_default().insert(to);
+        self.connections.entry(to).or_default().insert(from);
+    }
+
+    fn find_circuit(&self, junction_box: usize, visited: &mut HashSet<usize>) -> Circuit {
+        let mut circuit = Circuit::new();
+        let mut stack = vec![junction_box];
+
+        while let Some(node) = stack.pop() {
+            if !visited.insert(node) {
+                continue;
+            }
+
+            circuit.insert(node);
+
+            if let Some(neighbors) = self.connections.get(&node) {
+                for &neighbor in neighbors {
+                    if !visited.contains(&neighbor) {
+                        stack.push(neighbor);
+                    }
+                }
+            }
+        }
+
+        circuit
     }
 }
 
