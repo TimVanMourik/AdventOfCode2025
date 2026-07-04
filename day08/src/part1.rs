@@ -1,6 +1,4 @@
-use std::collections::HashSet;
-
-use crate::{Circuit, ConnectionGraph};
+use crate::ConnectionGraph;
 use crate::{JunctionBox, Playground};
 
 impl Playground {
@@ -22,30 +20,12 @@ impl Playground {
     }
 }
 
-impl ConnectionGraph {
-    fn find_circuits(&self) -> Vec<Circuit> {
-        let mut visited = HashSet::<usize>::new();
-        let mut circuits = Vec::<Circuit>::new();
-
-        for &junction_box in self.connections.keys() {
-            if !visited.contains(&junction_box) {
-                let circuit = self.find_circuit(junction_box, &mut visited);
-                if !circuit.is_empty() {
-                    circuits.push(circuit);
-                }
-            }
-        }
-
-        circuits
-    }
-}
-
 pub fn part1(items: &[JunctionBox], number_of_connections: usize) -> usize {
     let playground = Playground::new(items);
     let graph = playground.wire_up(number_of_connections);
     let circuits = graph.find_circuits();
 
-    let mut circuit_sizes: Vec<usize> = circuits.iter().map(HashSet::len).collect();
+    let mut circuit_sizes: Vec<usize> = circuits.iter().map(|circuit| circuit.len()).collect();
     circuit_sizes.sort_unstable_by(|a, b| b.cmp(a));
     circuit_sizes.into_iter().take(3).product()
 }

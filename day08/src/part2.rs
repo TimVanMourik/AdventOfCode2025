@@ -9,7 +9,7 @@ impl Playground {
         let mut main_circuit = Circuit::new();
         let mut it = self.distance_matrix().shortest_distances();
         let mut last_connected = (0, 0);
-        while main_circuit.len() < self.distance_matrix().distances.len() {
+        while main_circuit.len() < self.distance_matrix().len() {
             let Some((_d, i, j)) = it.next() else {
                 return last_connected;
             };
@@ -41,8 +41,8 @@ pub fn part2(items: &[JunctionBox]) -> usize {
     let playground = Playground::new(items);
     let last_connected = playground.wire_all();
 
-    let x1 = items[last_connected.0].location.0;
-    let x2 = items[last_connected.1].location.0;
+    let x1 = items[last_connected.0].x();
+    let x2 = items[last_connected.1].x();
 
     x1 * x2
 }
