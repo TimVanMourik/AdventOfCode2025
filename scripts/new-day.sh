@@ -46,28 +46,32 @@ path = "src/main.rs"
 EOF
 
 cat > "$crate_dir/src/lib.rs" <<'EOF'
+mod parsing;
 mod part1;
 mod part2;
+pub use parsing::{parse, Item};
 pub use part1::part1;
 pub use part2::part2;
+EOF
 
+cat > "$crate_dir/src/parsing.rs" <<'EOF'
 pub struct Item {
-    pub value: String,
+  pub value: String,
 }
 
 fn parse_line(line: &str) -> Item {
-    let trimmed = line.trim();
-    Item {
-        value: trimmed.parse::<String>().unwrap(),
-    }
+  let trimmed = line.trim();
+  Item {
+    value: trimmed.parse::<String>().unwrap(),
+  }
 }
 
 pub fn parse(input: &str) -> Vec<Item> {
-    input
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .map(parse_line)
-        .collect()
+  input
+    .lines()
+    .filter(|line| !line.trim().is_empty())
+    .map(parse_line)
+    .collect()
 }
 EOF
 
