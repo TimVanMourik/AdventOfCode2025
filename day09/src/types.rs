@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-#[derive(Hash, Eq, PartialEq, Debug)]
+#[derive(Clone, Copy, Hash, Eq, PartialEq, Debug)]
 pub struct Tile {
     pub x: usize,
     pub y: usize,
@@ -28,18 +28,12 @@ impl Theater {
 
 impl std::fmt::Debug for Theater {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut grid: HashSet<(i32, i32)> = HashSet::new();
-
-        for tile in &self.red_tiles {
-            grid.insert((tile.x as i32, tile.y as i32));
-        }
-
-        // Get max x and y to determine the size of the grid
-        let max_x = grid.iter().map(|(x, _)| *x).max().unwrap_or(0);
-        let max_y = grid.iter().map(|(_, y)| *y).max().unwrap_or(0);
+        let max_x = self.red_tiles.iter().map(|tile| tile.x).max().unwrap_or(0);
+        let max_y = self.red_tiles.iter().map(|tile| tile.y).max().unwrap_or(0);
         for y in 0..=max_y + 1 {
             for x in 0..=max_x + 1 {
-                if grid.contains(&(x, y)) {
+                let tile = Tile::new(x, y);
+                if self.red_tiles.contains(&tile) {
                     write!(f, "#")?;
                 } else {
                     write!(f, ".")?;
@@ -48,5 +42,17 @@ impl std::fmt::Debug for Theater {
             writeln!(f)?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Theater, Tile};
+
+    #[test]
+    fn stores_red_tiles() {
+        let theater = Theater::new([Tile::new(1, 2)].into_iter().collect());
+
+        assert!(theater.red_tiles().contains(&Tile::new(1, 2)));
     }
 }
