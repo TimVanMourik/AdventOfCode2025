@@ -22,7 +22,7 @@ pub fn part1(theater: &Theater) -> u128 {
     max_area
 }
 
-fn compute_convex_hull(tiles: &HashSet<Tile>) -> HashSet<Tile> {
+fn compute_convex_hull(tiles: &[Tile]) -> HashSet<Tile> {
     let mut sorted_tiles: Vec<Tile> = tiles.iter().copied().collect();
     sorted_tiles.sort_unstable_by_key(|tile| (tile.x, tile.y));
 

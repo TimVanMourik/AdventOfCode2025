@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 #[derive(Clone, Copy, Hash, Eq, PartialEq, Debug)]
 pub struct Tile {
     pub x: usize,
@@ -13,15 +11,15 @@ impl Tile {
 }
 
 pub struct Theater {
-    red_tiles: HashSet<Tile>,
+    pub red_tiles: Vec<Tile>,
 }
 
 impl Theater {
-    pub fn new(red_tiles: HashSet<Tile>) -> Self {
+    pub fn new(red_tiles: Vec<Tile>) -> Self {
         Self { red_tiles }
     }
 
-    pub fn red_tiles(&self) -> &HashSet<Tile> {
+    pub fn red_tiles(&self) -> &Vec<Tile> {
         &self.red_tiles
     }
 }
@@ -51,7 +49,7 @@ mod tests {
 
     #[test]
     fn stores_red_tiles() {
-        let theater = Theater::new([Tile::new(1, 2)].into_iter().collect());
+        let theater = Theater::new(vec![Tile::new(1, 2)]);
 
         assert!(theater.red_tiles().contains(&Tile::new(1, 2)));
     }
