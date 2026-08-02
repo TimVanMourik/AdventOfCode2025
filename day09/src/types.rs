@@ -19,7 +19,7 @@ impl Theater {
         Self { red_tiles }
     }
 
-    pub fn red_tiles(&self) -> &Vec<Tile> {
+    pub fn red_tiles(&self) -> &[Tile] {
         &self.red_tiles
     }
 }
