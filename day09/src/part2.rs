@@ -50,8 +50,18 @@ struct Floor {
 impl Floor {
     fn new(theater: &Theater) -> Self {
         let tiles = theater.red_tiles();
-        let x_axis = CoordinateAxis::new(std::iter::once(0).chain(tiles.iter().map(|tile| tile.x)));
-        let y_axis = CoordinateAxis::new(std::iter::once(0).chain(tiles.iter().map(|tile| tile.y)));
+        let x_max = tiles.iter().map(|tile| tile.x).max().unwrap_or(0);
+        let y_max = tiles.iter().map(|tile| tile.y).max().unwrap_or(0);
+        let x_axis = CoordinateAxis::new(
+            std::iter::once(0)
+                .chain(tiles.iter().map(|tile| tile.x))
+                .chain(std::iter::once(x_max + 1)),
+        );
+        let y_axis = CoordinateAxis::new(
+            std::iter::once(0)
+                .chain(tiles.iter().map(|tile| tile.y))
+                .chain(std::iter::once(y_max + 1)),
+        );
 
         let red_tiles = tiles
             .iter()
