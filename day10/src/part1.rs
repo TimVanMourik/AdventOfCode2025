@@ -4,9 +4,9 @@ use anyhow::{anyhow, Result};
 
 use crate::Machine;
 
-pub struct MachineBinary {
-    pub(crate) lights: usize,
-    pub(crate) buttons: Vec<usize>,
+struct MachineBinary {
+    lights: usize,
+    buttons: Vec<usize>,
 }
 
 fn convert_machine(machine: &Machine) -> MachineBinary {
